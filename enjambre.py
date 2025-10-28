@@ -6,8 +6,6 @@ import numpy as np
 
 # Realizar la minimización de la función
 #   x**2 + y**2 + [25*(sin(x) + sin(y))]
-def fitness(x, y):
-    return x**2 + y**2 + 25*[np.sin(x) + np.sin(y)]
 # en el intervalo de valores (-5,5) para (x, y) usando PSO.
 
 # Versión de PSO: Global
@@ -30,4 +28,115 @@ b2 = 1.2
 # pbest (mejor individuo de esa particula)
 # gbest (mejor individuo OVERALL de entre todas las particulas)
 
+def fitness(x, y):
+    return (x**2 + y**2 + (25 * (np.sin(x) + np.sin(y))))
 
+def create_generation():
+    new_generation = []
+
+    for i in range(c_particulas):
+        # Individual is particle
+        # Each particle has to have:    Position Vector (X,Y), and Velocity Vector (Vx, Vy)
+        # We will use the Position Vector to get their fitness
+        X = random.uniform(-5, 5)
+        Y = random.uniform(-5, 5)
+        fit = fitness(X, Y)
+        # When we initialize Velocity Vector is always (0,0)
+        individual = [(X,Y),fit,(0,0)]
+        new_generation.append(individual)
+
+    return new_generation
+
+def print_generation(generation):
+    for i in range(c_particulas):
+        # To read the individual
+        (pos, fit, vel) = generation[i]
+        (x, y) = pos
+        (vx, vy) = vel
+        print("Particle", i, f"\tPosition: ({x:.4f}, {y:.4f})", f"\t | Velocity :({vx:.4f}, {vy:.4f})", f"\t | Fitness: {fit:.6f}")
+    print("\n")
+
+def print_gbest(gbest):
+    (pos, fit, vel) = gbest
+    (x, y) = pos
+    (vx, vy) = vel
+    print("Global best: ", f"\tPosition: ({x:.4f}, {y:.4f})", f"\t | Velocity :({vx:.4f}, {vy:.4f})", f"\t | Fitness: {fit:.6f}", "\n")
+
+def get_pbest_gbest(generation, old_pbest_list = None, old_gbest = None):
+    # There will we a pbest for every particle, but only will be one gbest
+    pbest_list = []
+
+    if old_gbest is None:
+        gbest = None
+    else:
+        gbest = old_gbest
+
+    for i in range(c_particulas):
+        fit = generation[i][1]
+
+        # Conditions for the initial generation
+        if gbest is None:
+            gbest = generation[i]
+
+        if fit < gbest[1]:
+            # Then we update the gbest
+            gbest = generation[i]
+
+        if old_pbest_list is None:
+            pbest = generation[i]
+            pbest_list.append(pbest)
+            continue
+
+        if fit < old_pbest_list[i][1]:
+            # Then we update that pbest
+            pbest = generation[i]
+        else:
+            pbest = old_pbest_list[i]
+
+        pbest_list.append(pbest)
+
+    return pbest_list, gbest
+
+def update_generation(old_generation, pbest_list, gbest):
+    new_generation = []
+    for i in range(c_particulas):
+        pbest = pbest_list[i]
+        pos = old_generation[i][0]
+        (X, Y) = pos
+        vel = old_generation[i][2]
+        (Vx, Vy) = vel
+
+        nVx, nVy = update_velocity(X, Y, Vx, Vy, pbest, gbest)
+
+        X += nVx
+        Y += nVy
+
+        fit = fitness(X, Y)
+
+        individual = [(X,Y),fit,(nVx,nVy)]
+        new_generation.append(individual)
+    return new_generation
+
+def update_velocity(X, Y, Vx, Vy, pbest, gbest):
+    nVx = a * Vx
+    nVy = a * Vy
+    return nVx, nVy
+
+num_gen = 0
+generation = create_generation()
+print("\tInitial generation")
+print_generation(generation)
+# After each generation we need to save/update every pbest and gbest
+pbest_list, gbest = get_pbest_gbest(generation)
+print_gbest(gbest)
+print_generation(pbest_list)
+
+while True:
+    num_gen += 1
+    generation = update_generation(generation, pbest_list, gbest)
+    pbest_list, gbest = get_pbest_gbest(generation)
+    print("\tGeneration: ", num_gen)
+    print_gbest(gbest)
+    print_generation(pbest_list)
+    if num_gen >= c_iteraciones:
+        break
