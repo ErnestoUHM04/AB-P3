@@ -7,6 +7,8 @@ import numpy as np
 # Realizar la minimización de la función
 #   x**2 + y**2 + [25*(sin(x) + sin(y))]
 # en el intervalo de valores (-5,5) para (x, y) usando PSO.
+MAX_LIMIT = 5
+MIN_LIMIT = -5
 
 # Versión de PSO: Global
 # Número de partículas: 20
@@ -101,25 +103,47 @@ def update_generation(old_generation, pbest_list, gbest):
     new_generation = []
     for i in range(c_particulas):
         pbest = pbest_list[i]
+
         pos = old_generation[i][0]
         (X, Y) = pos
+
         vel = old_generation[i][2]
         (Vx, Vy) = vel
 
         nVx, nVy = update_velocity(X, Y, Vx, Vy, pbest, gbest)
 
         X += nVx
+
+        if X > MAX_LIMIT:
+            X = MAX_LIMIT # Round it up to 5
+        if X < MIN_LIMIT:
+            X = MIN_LIMIT # Round it up to -5
+
         Y += nVy
+
+        if Y > MAX_LIMIT:
+            Y = MAX_LIMIT
+        if Y < MIN_LIMIT:
+            Y = MIN_LIMIT
 
         fit = fitness(X, Y)
 
         individual = [(X,Y),fit,(nVx,nVy)]
+
         new_generation.append(individual)
+
     return new_generation
 
 def update_velocity(X, Y, Vx, Vy, pbest, gbest):
-    nVx = a * Vx
-    nVy = a * Vy
+    (pb_X, pb_Y) = pbest[0]
+    (gb_X, gb_Y) = gbest[0]
+
+    r1 = random.random()
+    r2 = random.random()
+
+    nVx = a * Vx + b1 * r1 * (pb_X - X) + b2 * r2 * (gb_X - X)
+    nVy = a * Vy + b1 * r1 * (pb_Y - Y) + b2 * r2 * (gb_Y - Y)
+
     return nVx, nVy
 
 num_gen = 0
@@ -134,9 +158,12 @@ print_generation(pbest_list)
 while True:
     num_gen += 1
     generation = update_generation(generation, pbest_list, gbest)
-    pbest_list, gbest = get_pbest_gbest(generation)
+    # Then we update the pbest list and the gbest
+    pbest_list, gbest = get_pbest_gbest(generation, pbest_list, gbest)
     print("\tGeneration: ", num_gen)
     print_gbest(gbest)
-    print_generation(pbest_list)
+    print("Particles best: \n")
+    print_generation(pbest_list) # <- This is what the teacher asked us
+    #print_generation(generation) <- THIS IS FOR DEBUGGING
     if num_gen >= c_iteraciones:
         break
