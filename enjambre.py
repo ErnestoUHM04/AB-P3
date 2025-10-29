@@ -162,9 +162,9 @@ while True:
     # Then we update the pbest list and the gbest
     pbest_list, gbest = get_pbest_gbest(generation, pbest_list, gbest)
     print("\tGeneration: ", num_gen)
+    print_generation(generation)# <- THIS IS FOR DEBUGGING
     print_gbest(gbest)
     print("Particles best: \n")
     print_generation(pbest_list)# <- This is what the teacher asked us
-    #print_generation(generation)# <- THIS IS FOR DEBUGGING
     if num_gen >= c_iteraciones:
         break
