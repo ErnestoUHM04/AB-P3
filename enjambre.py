@@ -149,10 +149,11 @@ def update_velocity(X, Y, Vx, Vy, pbest, gbest):
 num_gen = 0
 generation = create_generation()
 print("\tInitial generation")
-print_generation(generation)
+#print_generation(generation)# <- THIS IS FOR DEBUGGING
 # After each generation we need to save/update every pbest and gbest
 pbest_list, gbest = get_pbest_gbest(generation)
 print_gbest(gbest)
+print("Particles best: \n")
 print_generation(pbest_list)
 
 while True:
@@ -163,7 +164,7 @@ while True:
     print("\tGeneration: ", num_gen)
     print_gbest(gbest)
     print("Particles best: \n")
-    print_generation(pbest_list) # <- This is what the teacher asked us
-    #print_generation(generation) <- THIS IS FOR DEBUGGING
+    print_generation(pbest_list)# <- This is what the teacher asked us
+    #print_generation(generation)# <- THIS IS FOR DEBUGGING
     if num_gen >= c_iteraciones:
         break
